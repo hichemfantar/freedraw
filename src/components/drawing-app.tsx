@@ -378,10 +378,26 @@ function DrawingApp({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const now = new Date();
+
+    // Format date as YYYY-MM-DD
+    const date = now.toISOString().split("T")[0];
+
+    // Format time as H.MM.SS AM/PM
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    const seconds = now.getSeconds().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
+    const time = `${hours}.${minutes}.${seconds} ${ampm}`;
+
+    const filename = `Drawing ${date} at ${time}.png`;
+
     // Create download link and trigger download
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
-    link.download = "drawing.png";
+    link.download = filename;
     link.click();
     toast.success("Image saved.");
   };
