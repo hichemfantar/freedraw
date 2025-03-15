@@ -450,38 +450,63 @@ function DrawingApp({
       return;
     }
 
-    // Request camera access
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: direction,
+    const capturePromise = () => {
+      return new Promise<{ imageData: string }>((resolve, reject) => {
+        // Request camera access
+        navigator.mediaDevices
+          .getUserMedia({
+            video: {
+              facingMode: direction,
+            },
+          })
+          .then((stream) => {
+            // Create video element to display camera feed
+            const video = document.createElement("video");
+            video.srcObject = stream;
+            video.play();
+
+            // Take picture after a brief delay
+            setTimeout(() => {
+              try {
+                // Create temporary canvas to capture the image
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                  reject("Failed to get canvas context");
+                  return;
+                }
+
+                // Draw video frame to canvas
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Stop camera stream
+                stream.getTracks().forEach((track) => track.stop());
+
+                // Return the image data
+                const imageData = canvas.toDataURL("image/png");
+                resolve({ imageData });
+              } catch (error) {
+                reject(error);
+              }
+            }, 1000);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
+    };
+
+    toast.promise(capturePromise, {
+      loading: "Capturing image...",
+      success: (data) => {
+        // Apply captured image to main canvas
+        applyImageToCanvas(data.imageData);
+        return "Picture taken successfully";
       },
+      error: "Failed to capture image",
     });
-
-    // Create video element to display camera feed
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.play();
-
-    // Take picture after a brief delay
-    setTimeout(() => {
-      // Create temporary canvas to capture the image
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      // Draw video frame to canvas
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      // Stop camera stream
-      stream.getTracks().forEach((track) => track.stop());
-      toast.success("Picture taken.");
-
-      // Apply captured image to main canvas
-      applyImageToCanvas(canvas.toDataURL("image/png"));
-    }, 1000);
   };
-
   return (
     <div className="relative w-full h-dvh">
       {/* Canvas element for drawing */}
