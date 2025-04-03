@@ -443,6 +443,7 @@ function DrawingApp({
    * Capture an image using the device camera
    * @param direction - Camera direction (front or back)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const captureImage = async (direction: CameraDirection = "environment") => {
     // Check if camera is supported
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -533,7 +534,7 @@ function DrawingApp({
         saveImage={saveImage}
         copyImage={copyImage}
         clearCanvas={clearCanvas}
-        captureImage={captureImage}
+        applyImageToCanvas={applyImageToCanvas}
         updateCanvasTool={updateCanvasTool}
         tool={tool}
         strokeColor={strokeColor}

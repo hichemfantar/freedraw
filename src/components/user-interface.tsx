@@ -15,18 +15,13 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import type { Tool } from "@/types";
 import {
   CameraIcon,
   CopyIcon,
@@ -40,8 +35,9 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { CameraDialog } from "./camera-dialog";
 import { ConfigurationPanel } from "./configuration-panel";
-import type { CameraDirection, Tool } from "@/types";
 
 export function UserInterface({
   isDrawing,
@@ -50,7 +46,6 @@ export function UserInterface({
   saveImage,
   copyImage,
   clearCanvas,
-  captureImage,
   updateCanvasTool,
   tool,
   strokeColor,
@@ -59,6 +54,7 @@ export function UserInterface({
   updateCanvasBg,
   strokeWidth,
   updateCanvasStrokeWidth,
+  applyImageToCanvas,
 }: {
   isDrawing: boolean;
   isUiHidden: boolean;
@@ -66,7 +62,6 @@ export function UserInterface({
   saveImage: () => void;
   copyImage: () => void;
   clearCanvas: () => void;
-  captureImage: (direction: CameraDirection) => void;
   updateCanvasTool: (tool: Tool) => void;
   tool: Tool;
   strokeColor: string;
@@ -75,7 +70,14 @@ export function UserInterface({
   updateCanvasBg: (color: string) => void;
   strokeWidth: number;
   updateCanvasStrokeWidth: (width: number) => void;
+  applyImageToCanvas: (imageData: string) => void;
 }) {
+  const [cameraOpen, setCameraOpen] = useState(false);
+
+  const handleCameraCapture = (imageData: string) => {
+    applyImageToCanvas(imageData);
+  };
+
   return (
     <div
       className={cn("absolute top-0 w-full p-4 pointer-events-none space-y-6")}
@@ -202,25 +204,29 @@ export function UserInterface({
 
             {/* Camera button (mobile only) */}
             <div className="md:hidden inline-block">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={cn(
-                      "p-2.5 rounded-md transition hover:bg-primary/10",
-                    )}
-                  >
-                    <CameraIcon className="size-4" strokeWidth={1.5} />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
-                  <DropdownMenuItem onClick={() => captureImage("environment")}>
-                    Back Camera
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => captureImage("user")}>
-                    Front Camera
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <TooltipProvider>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setCameraOpen(true)}
+                      className={cn(
+                        "p-2.5 rounded-md transition hover:bg-primary/10",
+                      )}
+                    >
+                      <CameraIcon className="size-4" strokeWidth={1.5} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Take Photo</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <CameraDialog
+                open={cameraOpen}
+                onOpenChange={setCameraOpen}
+                onCapture={handleCameraCapture}
+              />
             </div>
           </Card>
         </div>
