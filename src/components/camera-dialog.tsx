@@ -171,6 +171,8 @@ export function CameraDialog({
             ref={videoRef}
             autoPlay
             playsInline
+            controls={false}
+            muted
             className="w-full h-full object-cover"
           />
         </div>
